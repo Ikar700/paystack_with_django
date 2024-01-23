@@ -38,43 +38,32 @@ class PaymentInitView(View):
         }   
         return redirect(request, 'payment/create.html', context)
 
-class PaymentInitView(View):
-    
-    def get(self, request):
-        return render(request, 'payment/process.html', locals())
-    
-    def post(self, request):
-        form = PaymentInitForm(request.POST)
+    def payment_process(self, request):
+        form = PaymentInitForm(self.request.POST)
 
-        payment_id = request.session.get('payment_id', None)
+        payment_id = self.request.session.get('payment_id', None)
         payment = get_object_or_404(Payment, payment_id)
+
         amount = payment.get_amount()
 
         success_url = request.build_absolute_url(
-            reverse('payment:success')
+            reverse('payment:process')
         )
+        
         cancel_url = request.build_absolute_url(
-            reverse('payment:canceled')
+            reverse('payment:cancelled')
         )
-        metadata= json.dumps({"payment_id":payment_id,  
-                              "cancel_action":cancel_url,   
-                            })
+
+        metadata = json.dumps(
+            {"payment_id":payment_id,
+             "cancel_action":cancel_url
+             }
+        )
 
         session_data = {
-            'email': payment.email,
-            'amount': int(amount),
-            'callback_url': success_url,
-            'metadata': metadata
-            }
-
-        headers = {"authorization": f"Bearer {api_key}"}
-        r = requests.post(url, headers=headers, data=session_data)
-        response = r.json()
-        if response["status"] == True :
-            # redirect to Paystack payment form
-            try:
-                redirect_url = response["data"]["authorization_url"]
-                return redirect(redirect_url, code=303)
-            except:
-                pass
-        return render(request, 'payment/process.html', locals())
+            'email' : payment.email,
+            'amount' : int(amount),
+            'callback_url' : success_url,
+            'metadata' : metadata
+        }
+        
