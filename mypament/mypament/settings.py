@@ -128,4 +128,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 PAYSTACK_SECRET_KEY = "sk_test_f1240002a3e82cca1669d6a5fa08b4b8b7177a20"
 PAYSTACK_PUBLIC_KEY = "pk_test_3193a39b3c3a3877292bc91784202d2ff9f8e78d"
-PAYSTACK_INITIALIZE_PUBLIC_URL = "https://api.paystack.co/transaction/initialize"
+PAYSTACK_INITIALIZE_PAYMENT_URL = "https://api.paystack.co/transaction/initialize"
