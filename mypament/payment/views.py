@@ -38,20 +38,20 @@ class PaymentInitView(View):
         }   
         return redirect(request, 'payment/create.html', context)
 
-    def payment_process(self, request):
-        form = PaymentInitForm(self.request.POST)
+class PaymentProcessView(View):
+    def get(self, request):
 
-        payment_id = self.request.session.get('payment_id', None)
-        payment = get_object_or_404(Payment, payment_id)
+        payment_id = request.session.get('payment_id', None)
+        payment = get_object_or_404(Payment, id=payment_id)
 
         amount = payment.get_amount()
 
-        success_url = request.build_absolute_url(
+        success_url = request.build_absolute_uri(
             reverse('payment:process')
         )
         
-        cancel_url = request.build_absolute_url(
-            reverse('payment:cancelled')
+        cancel_url = request.build_absolute_uri(
+            reverse('payment:canceled')
         )
 
         metadata = json.dumps(
@@ -66,4 +66,25 @@ class PaymentInitView(View):
             'callback_url' : success_url,
             'metadata' : metadata
         }
-        
+
+        headers = {"authorization": f"Bearer {api_key}"}
+        # API request to paystack server
+        r = requests.post(url, headers=headers, data=session_data)
+        response = r.json()
+        if response["status"] == True :
+            # redirect to Paystack payment form
+            try:
+                redirect_url = response["data"]["authorization_url"]
+                return redirect(redirect_url, code=303)
+            except:
+                pass
+        else:
+            return render(request, 'payment/process.html', locals())
+        return render(request, 'payment/process.html', locals())
+    
+
+def payment_success(request):
+    return render(request, 'payment/success.html')
+
+def payment_canceled(request):
+    return render(request, 'payment/canceled.html')

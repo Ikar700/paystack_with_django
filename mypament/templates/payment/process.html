@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content%}
+<div class="container mt-3">
+    <h1>Payment {{ payment.id }}</h1>
+    <ul class="object-tools">
+        <li>
+            <a href="#" onclick="window.print();">
+                Print payment
+            </a>
+        </li>
+    </ul>
+    <table class="table">
+        <tr>
+            <th>Created</th>
+            <td>{{ payment.created }}</td>
+        </tr>
+        <tr>
+            <th>Customer</th>
+            <td>{{ payment.first_name }} {{ payment.last_name }}</td>
+        </tr>
+        <tr>
+            <th>E-mail</th>
+            <td><a href="mailto:{{ payment.email }}">{{ payment.email }}</a></td>
+        </tr>
+        <tr>
+            <th>City</th>
+            <td>
+                {{ payment.city }}
+            </td>
+        </tr>
+        <tr>
+            <th>Total amount</th>
+            <td>${{ payment.get_amount }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{% if payment.paid %}Paid{% else %}Pending payment{% endif %}</td>
+        </tr>
+        <tr>
+            <th>Paystack payment</th>
+            <td>
+                {% if payment.paystack_ref %}
+                    ##################
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    <form action="{% url "payment:process" %}" method="post">
+        <input type="submit" class="btn btn-primary mt-2" value="Pay now">
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}
