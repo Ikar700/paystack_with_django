@@ -41,13 +41,19 @@ class PaymentInitView(View):
 class PaymentProcessView(View):
     def get(self, request):
 
+        self.payment_id = request.session.get('payment_id', None)
+        payment = get_object_or_404(Payment, id=self.payment_id)
+
+        amount = payment.get_amount()
+        return render(request, 'payment/process.html', locals())
+    
+    def post(self, request):
         payment_id = request.session.get('payment_id', None)
         payment = get_object_or_404(Payment, id=payment_id)
-
         amount = payment.get_amount()
 
         success_url = request.build_absolute_uri(
-            reverse('payment:process')
+            reverse('payment:success')
         )
         
         cancel_url = request.build_absolute_uri(
@@ -55,7 +61,7 @@ class PaymentProcessView(View):
         )
 
         metadata = json.dumps(
-            {"payment_id":payment_id,
+            {"payment_id" : payment_id,
              "cancel_action":cancel_url
              }
         )
