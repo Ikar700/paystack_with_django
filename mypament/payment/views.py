@@ -89,8 +89,26 @@ class PaymentProcessView(View):
         return render(request, 'payment/process.html', locals())
     
 
-def payment_success(request):
-    return render(request, 'payment/success.html')
+class PaymentSuccess(View):
+    def get(self, request):
+        payment_id = request.session.get('payment_id',None)
+        payment = get_object_or_404(Payment,id=payment_id)
+
+        ref = request.GET.get('reference', '')
+
+        url = f"https://api.paystack.co/transaction/verify/{ref}"
+
+        headers = {"authorization": f"Bearer {api_key}"}
+        r = requests.get(url, headers=headers)
+        res = r.json()
+        res = res["data"]
+
+        if res['status'] == 'success':
+            payment.paystack_ref = ref
+            payment.paid = True
+            payment.save()
+
+        return render(request, 'payment/success.html')
 
 def payment_canceled(request):
     return render(request, 'payment/canceled.html')
